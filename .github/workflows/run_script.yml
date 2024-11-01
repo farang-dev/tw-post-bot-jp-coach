@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 */2 * * *"  # Runs every 2 hours
   workflow_dispatch:       # Allows manual run of the workflow
+  push:
+    branches:
+      - main  # Specify the branch to monitor for changes
+  pull_request:
+    branches:
+      - main  # Specify the branch to monitor for pull requests
 
 jobs:
   run-script:
