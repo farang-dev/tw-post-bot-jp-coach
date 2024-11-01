@@ -1,7 +1,6 @@
 import openai
 import tweepy
 import os
-import time
 import random
 from dotenv import load_dotenv
 
@@ -53,7 +52,6 @@ def get_vocab_list():
     )
     return vocab_response['choices'][0]['message']['content'].strip()
 
-
 def get_daily_phrase():
     prompt = "You are a Japanese language coach providing useful phrases for daily conversation. Write a tweet introducing a helpful Japanese phrase or expression, explaining its meaning and providing a simple example in English. Keep it within 280 characters."
     response = openai.ChatCompletion.create(
@@ -99,22 +97,10 @@ def tweet_content():
         response = client.create_tweet(text=content)
         tweet_id = response.data['id']
         print(f"Tweeted: {content} (Tweet ID: {tweet_id})")
-        return True
     except tweepy.TooManyRequests as e:
-        print("Rate limit reached. Waiting for next window...")
-        return False  # Indicates rate limit was hit
+        print("Rate limit reached. Exiting script...")
     except Exception as e:
         print(f"Error tweeting: {e}")
-        return False
 
 if __name__ == "__main__":
-    interval = 7200  # 2 hours in seconds
-
-    while True:
-        success = tweet_content()
-        if not success:
-            # Wait for Twitter's rate limit reset window if limited
-            time.sleep(3600)  # 1 hour delay if a failure occurs
-        else:
-            # Wait the regular 2-hour interval
-            time.sleep(interval)
+    tweet_content()  # Run the content generation and tweeting once
