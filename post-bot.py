@@ -37,7 +37,7 @@ def get_grammar_explanation():
 
 def get_vocab_list():
     # Step 1: Ask OpenAI to suggest a theme for vocabulary
-    theme_prompt = "Suggest a theme for a list of Japanese vocabulary words that would be interesting for English speakers learning Japanese. The theme should be simple and common, like 'food' or 'travel'.dont use a quotation mark."
+    theme_prompt = "Suggest a theme for a list of Japanese vocabulary words that would be interesting for English speakers learning Japanese. The theme should be randoomized from the beginners to advanced level.dont use a quotation mark."
     theme_response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": theme_prompt}]
@@ -45,7 +45,7 @@ def get_vocab_list():
     theme = theme_response['choices'][0]['message']['content'].strip()
 
     # Step 2: Generate vocabulary list based on the suggested theme
-    vocab_prompt = f"As a Japanese vocabulary coach, create a tweet listing 5-10 Japanese vocabulary words related to the theme '{theme}' with short, simple English definitions. Make it easy for beginners, and keep the tweet within 280 characters.dont use a quotation mark."
+    vocab_prompt = f"As a Japanese vocabulary coach, create a tweet listing 5-10 Japanese vocabulary words related to the theme '{theme}' with short, simple English definitions. Randomize the content from the beginners to advanced level. Keep the tweet within 280 characters.dont use a quotation mark."
     vocab_response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": vocab_prompt}]
@@ -53,7 +53,7 @@ def get_vocab_list():
     return vocab_response['choices'][0]['message']['content'].strip()
 
 def get_daily_phrase():
-    prompt = "You are a Japanese language coach providing useful phrases for daily conversation. Write a tweet introducing a helpful Japanese phrase or expression, explaining its meaning and providing a simple example in English. Keep it within 280 characters."
+    prompt = "You are a Japanese language coach providing useful phrases for daily conversation. Randomize the content from the beginners to advanced level. Write a tweet introducing a helpful Japanese phrase or expression, explaining its meaning and providing a simple example in English. Keep it within 280 characters."
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
@@ -61,7 +61,7 @@ def get_daily_phrase():
     return response['choices'][0]['message']['content'].strip()
 
 def get_synonym_thesaurus():
-    prompt = "As a Japanese language coach, create a tweet introducing a common Japanese word, along with 3-5 synonyms or related words and brief explanations in English. Keep it friendly and within 280 characters.dont use a quotation mark."
+    prompt = "As a Japanese language coach, create a tweet introducing a common Japanese word(randomize the content from the beginners to advanced level), along with 3-5 synonyms or related words and brief explanations in English. Keep it friendly and within 280 characters.dont use a quotation mark."
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
@@ -69,7 +69,7 @@ def get_synonym_thesaurus():
     return response['choices'][0]['message']['content'].strip()
 
 def get_pronunciation_tip():
-    prompt = "You are a pronunciation expert. Write a tweet that provides an easy tip to help English speakers improve their pronunciation of a common but challenging Japanese word. Include phonetic hints or a short practice tip. Keep it within 280 characters.dont use a quotation mark."
+    prompt = "You are a pronunciation expert. Write a tweet that provides practical advice or tips for each JLPT test(N5,N4,N3,N2,N1). Randomize the content from the beginners level to advanced level. Include phonetic hints or a short practice tip. Keep it within 280 characters.dont use a quotation mark."
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
