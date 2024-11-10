@@ -19,16 +19,9 @@ client = tweepy.Client(
 )
 
 # Define each type of prompt for the six content types
-def get_learning_advice():
-    prompt = "You are a Japanese language coach providing advice for English speakers learning Japanese. Create a tweet in English that gives a motivational tip or practical learning strategy for studying Japanese. Keep it simple and encouraging for beginners to intermediate learners. Limit to 280 characters. dont use a quotation mark."
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content'].strip()
 
 def get_grammar_explanation():
-    prompt = "You are a Japanese language teacher who simplifies grammar for English-speaking learners. Write a tweet explaining a common Japanese grammar point in easy-to-understand English. Include a short example sentence if possible. Limit the explanation to 280 characters.dont use a quotation mark."
+    prompt = "You are a Japanese language teacher who simplifies grammar for English-speaking learners. Write a tweet explaining a common Japanese grammar point in easy-to-understand English(from n5 to n1 level - sometimes introduce a very advanced grammar). Include a short example sentence if possible. Limit the explanation to 280 characters.dont use a quotation mark."
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
@@ -37,7 +30,7 @@ def get_grammar_explanation():
 
 def get_vocab_list():
     # Step 1: Ask OpenAI to suggest a theme for vocabulary
-    theme_prompt = "Suggest a theme for a list of Japanese vocabulary words that would be interesting for English speakers learning Japanese. The theme should be randoomized from the beginners to advanced level.dont use a quotation mark."
+    theme_prompt = "Suggest a theme for a list of Japanese vocabulary words that would be interesting for English speakers learning Japanese. The theme should be completely randomized from the beginners to very advanced level(sometimes it also introduces very advanced vocaburary). dont use a quotation mark."
     theme_response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": theme_prompt}]
@@ -45,45 +38,18 @@ def get_vocab_list():
     theme = theme_response['choices'][0]['message']['content'].strip()
 
     # Step 2: Generate vocabulary list based on the suggested theme
-    vocab_prompt = f"As a Japanese vocabulary coach, create a tweet listing 5-10 Japanese vocabulary words related to the theme '{theme}' with short, simple English definitions. Randomize the content from the beginners to advanced level. Keep the tweet within 280 characters.dont use a quotation mark."
+    vocab_prompt = f"As a Japanese vocabulary coach, create a tweet listing 5-10 Japanese vocabulary words related to the theme '{theme}' with short, simple English definitions. Randomize the content from the beginners to advanced level. at the end put hashtags(japanese learning related) that would generate the most impressions on X. Keep the tweet within 280 characters.dont use a quotation mark."
     vocab_response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": vocab_prompt}]
     )
     return vocab_response['choices'][0]['message']['content'].strip()
 
-def get_daily_phrase():
-    prompt = "You are a Japanese language coach providing useful phrases for daily conversation. Randomize the content from the beginners to advanced level. Write a tweet introducing a helpful Japanese phrase or expression, explaining its meaning and providing a simple example in English. Keep it within 280 characters."
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content'].strip()
-
-def get_synonym_thesaurus():
-    prompt = "As a Japanese language coach, create a tweet introducing a common Japanese word(randomize the content from the beginners to advanced level), along with 3-5 synonyms or related words and brief explanations in English. Keep it friendly and within 280 characters.dont use a quotation mark."
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content'].strip()
-
-def get_pronunciation_tip():
-    prompt = "You are a pronunciation expert. Write a tweet that provides practical advice or tips for each JLPT test(N5,N4,N3,N2,N1). Randomize the content from the beginners level to advanced level. Include phonetic hints or a short practice tip. Keep it within 280 characters.dont use a quotation mark."
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content'].strip()
 
 # List of content generation functions
 content_generators = [
-    get_learning_advice,
     get_grammar_explanation,
-    get_vocab_list,
-    get_daily_phrase,
-    get_synonym_thesaurus,
-    get_pronunciation_tip
+    get_vocab_list
 ]
 
 def tweet_content():
