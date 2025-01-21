@@ -2,6 +2,8 @@ import openai
 import tweepy
 import os
 import random
+import time
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -18,55 +20,87 @@ client = tweepy.Client(
     access_token_secret=os.getenv("ACCESS_TOKEN_SECRET")
 )
 
-# Define each type of prompt for the six content types
+def get_news_articles():
+    """Fetch news articles from RSS feeds"""
+    import feedparser
+    from datetime import datetime, timedelta
 
-def get_grammar_explanation():
-    prompt = "You are a Japanese language teacher who simplifies grammar for English-speaking learners. Write a tweet explaining a common Japanese grammar point in easy-to-understand English(from n5 to n1 level - sometimes introduce a very advanced grammar). Include a short example sentence if possible. Limit the explanation to 280 characters.dont use a quotation mark."
-    response = openai.ChatCompletion.create(
+    # List of RSS feeds from reputable English news sources
+    rss_feeds = [
+        "http://feeds.bbci.co.uk/news/world/rss.xml",
+        "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best",
+        "https://www.theguardian.com/world/rss",
+        "https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/world/rss.xml"
+    ]
+
+    articles = []
+    for feed_url in rss_feeds:
+        feed = feedparser.parse(feed_url)
+        for entry in feed.entries:
+            # Only include recent articles (last 24 hours)
+            if datetime.now() - datetime(*entry.published_parsed[:6]) < timedelta(hours=24):
+                articles.append({
+                    'title': entry.title,
+                    'description': entry.summary,
+                    'source': {'name': feed.feed.title}
+                })
+                if len(articles) >= 5:  # Limit to 5 articles
+                    return articles
+    return articles
+
+def translate_to_japanese(text):
+    """Translate English text to Japanese using OpenAI"""
+    from openai import OpenAI
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    prompt = f"Translate this news article into Japanese, making it concise and suitable for a tweet (max 280 characters):\n\n{text}\n\nProvide only the Japanese translation without any additional text or explanations."
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].message.content.strip()
 
-def get_vocab_list():
-    # Step 1: Ask OpenAI to suggest a theme for vocabulary
-    theme_prompt = "Suggest a theme for a list of Japanese vocabulary words that would be interesting for English speakers learning Japanese. The theme should be completely randomized from the beginners to very advanced level(sometimes it also introduces very advanced vocaburary). dont use a quotation mark."
-    theme_response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": theme_prompt}]
-    )
-    theme = theme_response['choices'][0]['message']['content'].strip()
+def generate_news_tweet():
+    """Generate a tweet from news articles"""
+    articles = get_news_articles()
+    if not articles:
+        return None
 
-    # Step 2: Generate vocabulary list based on the suggested theme
-    vocab_prompt = f"As a Japanese vocabulary coach, create a tweet listing 5-10 Japanese vocabulary words related to the theme '{theme}' with short, simple English definitions. Randomize the content from the beginners to advanced level. at the end put hashtags(japanese learning related) that would generate the most impressions on X. Keep the tweet within 280 characters.dont use a quotation mark."
-    vocab_response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": vocab_prompt}]
-    )
-    return vocab_response['choices'][0]['message']['content'].strip()
+    # Select a random article
+    article = random.choice(articles)
+    title = article['title']
+    description = article['description'] or title
 
+    # Translate to Japanese
+    japanese_text = translate_to_japanese(description)
 
-# List of content generation functions
-content_generators = [
-    get_grammar_explanation,
-    get_vocab_list
-]
+    # Add source attribution if space allows
+    if len(japanese_text) < 250 and article['source']['name']:
+        japanese_text += f"\n\n(Source: {article['source']['name']})"
+
+    return japanese_text
 
 def tweet_content():
-    """Tweet randomly selected content."""
-    try:
-        # Select a random content generator
-        content_func = random.choice(content_generators)
-        content = content_func()
+    """Tweet news content continuously"""
+    while True:
+        try:
+            content = generate_news_tweet()
+            if content:
+                response = client.create_tweet(text=content)
+                tweet_id = response.data['id']
+                print(f"Tweeted: {content} (Tweet ID: {tweet_id})")
+            else:
+                print("No news articles found")
 
-        # Post the tweet
-        response = client.create_tweet(text=content)
-        tweet_id = response.data['id']
-        print(f"Tweeted: {content} (Tweet ID: {tweet_id})")
-    except tweepy.TooManyRequests as e:
-        print("Rate limit reached. Exiting script...")
-    except Exception as e:
-        print(f"Error tweeting: {e}")
+            # Wait for 1 hour before next tweet
+            time.sleep(3600)
+
+        except tweepy.TooManyRequests as e:
+            print("Rate limit reached. Waiting 15 minutes...")
+            time.sleep(900)
+        except Exception as e:
+            print(f"Error tweeting: {e}")
+            time.sleep(600)
 
 if __name__ == "__main__":
-    tweet_content()  # Run the content generation and tweeting once
+    tweet_content()  # Run the news broadcasting bot
