@@ -53,7 +53,7 @@ def translate_to_japanese(text):
     from openai import OpenAI
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    prompt = f"Translate this news article into Japanese, making it concise and suitable for a tweet (max 280 characters):\n\n{text}\n\nProvide only the Japanese translation without any additional text or explanations."
+    prompt = f"Translate this news article into Japanese, making it concise(but as detailed as possible for one tweet) and suitable for a tweet (max 280 characters):\n\n{text}\n\nProvide only the Japanese translation without any additional text or explanations."
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
