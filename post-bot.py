@@ -25,12 +25,15 @@ def get_news_articles():
     import feedparser
     from datetime import datetime, timedelta
 
-    # List of RSS feeds from reputable English news sources
+    # List of RSS feeds focused on AI and technology news
     rss_feeds = [
-        "http://feeds.bbci.co.uk/news/world/rss.xml",
-        "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best",
-        "https://www.theguardian.com/world/rss",
-        "https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/world/rss.xml"
+        "https://techcrunch.com/feed/",
+        "https://www.theverge.com/rss/index.xml",
+        "https://www.wired.com/feed/category/ai/latest/rss",
+        "https://www.technologyreview.com/feed/",
+        "https://www.artificialintelligence-news.com/feed/",
+        "https://syncedreview.com/feed/",
+        "https://venturebeat.com/feed/"
     ]
 
     articles = []
@@ -49,11 +52,23 @@ def get_news_articles():
     return articles
 
 def translate_to_japanese(text):
-    """Translate English text to Japanese using OpenAI"""
+    """Translate English text to Japanese using OpenAI with improved quality"""
     from openai import OpenAI
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    prompt = f"Translate this news article into Japanese, making it concise(but as detailed as possible for one tweet) and suitable for a tweet (max 280 characters):\n\n{text}\n\nProvide only the Japanese translation without any additional text or explanations."
+    prompt = f"""You are an AI/tech news translator. Translate this article into Japanese following these guidelines:
+1. Focus on clear, concise explanations of technical concepts
+2. Use professional but accessible language
+3. Format the translation like this:
+【AIニュース】
+[Main content in Japanese]
+[Key points in bullet points if space allows]
+
+Original text:
+{text}
+
+Provide only the Japanese translation without source attribution or additional explanations."""
+
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": prompt}]
